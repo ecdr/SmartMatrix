@@ -27,12 +27,18 @@ void SmartMatrix::copyRgb24(rgb24 *dst, rgb24 *src) {
     dst->green = src->green;
     dst->red = src->red;
     dst->blue = src->blue;
+#if (USE_ALPHA_MIXING == 1)
+    dst->alpha = src->alpha;
+#endif
 }
 
 void SmartMatrix::copyRgb24(rgb24 *dst, rgb24 src) {
     dst->green = src.green;
     dst->red = src.red;
     dst->blue = src.blue;
+#if (USE_ALPHA_MIXING == 1)
+    dst->alpha = src.alpha;
+#endif
 }
 
 colorCorrectionModes SmartMatrix::_ccmode = cc24;

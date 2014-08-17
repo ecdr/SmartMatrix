@@ -32,6 +32,9 @@
 //#include "MatrixHardware_KitV1_16x32.h"
 
 
+#define USE_ALPHA_MIXING 1
+
+
 // scroll text
 const int textLayerMaxStringLength = 50;
 
@@ -64,7 +67,11 @@ typedef struct rgb24 {
     uint8_t red;
     uint8_t green;
     uint8_t blue;
+#if (USE_ALPHA_MIXING == 1)
+    uint8_t alpha;
+#endif
 } rgb24;
+
 
 typedef enum colorCorrectionModes {
     ccNone,

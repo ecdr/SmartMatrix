@@ -61,6 +61,24 @@ rgb24 SmartMatrix::readPixel(int16_t x, int16_t y) {
     return backgroundBuffer[currentDrawBuffer][hwy][hwx];
 }
 
+#if (USE_ALPHA_MIXING == 1)
+// Alpha mix pixel being drawn to the screen (srcPixelColor) with pixel on screen (destPixelColor)
+rgb24 alphaMixColors(rgb24 destPixelColor, rgb24 srcPixelColor) {
+
+    rgb24 newColor;
+    newColor.alpha = 255;
+
+    float alpha = srcPixelColor.alpha / 255.0;
+    float oneMinusAlpha = 1.0 - alpha;
+
+    newColor.red   = (srcPixelColor.red   * alpha) + (destPixelColor.red   * oneMinusAlpha);
+    newColor.green = (srcPixelColor.green * alpha) + (destPixelColor.green * oneMinusAlpha);
+    newColor.blue  = (srcPixelColor.blue  * alpha) + (destPixelColor.blue  * oneMinusAlpha);
+
+    return newColor;
+}
+#endif
+
 void SmartMatrix::drawPixel(int16_t x, int16_t y, rgb24 color) {
     int hwx, hwy;
 
@@ -78,12 +96,18 @@ void SmartMatrix::drawPixel(int16_t x, int16_t y, rgb24 color) {
     } else if (screenConfig.rotation == rotation90) {
         hwx = (MATRIX_WIDTH - 1) - y;
         hwy = x;
-    } else { /* if (screenConfig.rotation == rotation270)*/
+    } else { // if (screenConfig.rotation == rotation270)
         hwx = y;
         hwy = (MATRIX_HEIGHT - 1) - x;
     }
 
+#if (USE_ALPHA_MIXING == 1)
+    rgb24 destPixelColor = readPixel(x, y);
+    rgb24 newColor = alphaMixColors(destPixelColor, color);
+    copyRgb24(&backgroundBuffer[currentDrawBuffer][hwy][hwx], newColor);
+#else
     copyRgb24(&backgroundBuffer[currentDrawBuffer][hwy][hwx], color);
+#endif
 }
 
 #define SWAPint(X,Y) { \
@@ -97,7 +121,13 @@ void SmartMatrix::drawHardwareHLine(uint8_t x0, uint8_t x1, uint8_t y, rgb24 col
     int i;
 
     for (i = x0; i <= x1; i++) {
+#if (USE_ALPHA_MIXING == 1)
+        rgb24 destPixelColor = backgroundBuffer[currentDrawBuffer][y][i];
+        rgb24 newColor = alphaMixColors(destPixelColor, color);
+        copyRgb24(&backgroundBuffer[currentDrawBuffer][y][i], newColor);
+#else
         copyRgb24(&backgroundBuffer[currentDrawBuffer][y][i], color);
+#endif
     }
 }
 
@@ -106,10 +136,15 @@ void SmartMatrix::drawHardwareVLine(uint8_t x, uint8_t y0, uint8_t y1, rgb24 col
     int i;
 
     for (i = y0; i <= y1; i++) {
+#if (USE_ALPHA_MIXING == 1)
+        rgb24 destPixelColor = backgroundBuffer[currentDrawBuffer][i][x];
+        rgb24 newColor = alphaMixColors(destPixelColor, color);
+        copyRgb24(&backgroundBuffer[currentDrawBuffer][i][x], newColor);
+#else
         copyRgb24(&backgroundBuffer[currentDrawBuffer][i][x], color);
+#endif
     }
 }
-
 void SmartMatrix::drawFastHLine(int16_t x0, int16_t x1, int16_t y, rgb24 color) {
     // make sure line goes from x0 to x1
     if (x1 < x0)

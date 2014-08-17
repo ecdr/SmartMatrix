@@ -62,11 +62,15 @@ rgb24 SmartMatrix::readPixel(int16_t x, int16_t y) {
 }
 
 #if (USE_ALPHA_MIXING == 1)
-// Alpha mix pixel being drawn to the screen (srcPixelColor) with pixel on screen (destPixelColor)
-rgb24 alphaMixColors(rgb24 destPixelColor, rgb24 srcPixelColor) {
 
+#define ALPHA_MAX 255
+
+// Alpha mix pixel being drawn to the screen (srcPixelColor) with pixel on screen (destPixelColor)
+rgb24 alphaMixColors(const rgb24& destPixelColor, const rgb24& srcPixelColor) {
+
+// FIXME: Use fixed point math
     rgb24 newColor;
-    newColor.alpha = 255;
+    newColor.alpha = ALPHA_MAX;   // TODO: Check resulting alpha calculation(?)
 
     float alpha = srcPixelColor.alpha / 255.0;
     float oneMinusAlpha = 1.0 - alpha;
@@ -102,9 +106,18 @@ void SmartMatrix::drawPixel(int16_t x, int16_t y, rgb24 color) {
     }
 
 #if (USE_ALPHA_MIXING == 1)
+// TODO: Check alpha calculations (shortcuts work for what code did, but was that typical alpha calc?)
+// FIXME: If shortcuts are correct, then repeat testing for color.alpha is 0 in various other draw functions
+if (color.alpha == 0)   // Drawing full transparent - leave destination unchanged.
+  return;
+if (color.alpha == ALPHA_MAX)   // Drawing opaque - ignore destPixel value
+    copyRgb24(&backgroundBuffer[currentDrawBuffer][hwy][hwx], color);
+else {
+// FIXME: This code used several places, make into a function
     rgb24 destPixelColor = readPixel(x, y);
     rgb24 newColor = alphaMixColors(destPixelColor, color);
     copyRgb24(&backgroundBuffer[currentDrawBuffer][hwy][hwx], newColor);
+}
 #else
     copyRgb24(&backgroundBuffer[currentDrawBuffer][hwy][hwx], color);
 #endif
@@ -122,9 +135,15 @@ void SmartMatrix::drawHardwareHLine(uint8_t x0, uint8_t x1, uint8_t y, rgb24 col
 
     for (i = x0; i <= x1; i++) {
 #if (USE_ALPHA_MIXING == 1)
+    if (color.alpha == 0)   // Drawing full transparent - leave destination unchanged.
+      return;
+    if (color.alpha == ALPHA_MAX)   // Drawing opaque - ignore destPixel value
+        copyRgb24(&backgroundBuffer[currentDrawBuffer][hwy][hwx], color);
+    else {
         rgb24 destPixelColor = backgroundBuffer[currentDrawBuffer][y][i];
         rgb24 newColor = alphaMixColors(destPixelColor, color);
         copyRgb24(&backgroundBuffer[currentDrawBuffer][y][i], newColor);
+    }
 #else
         copyRgb24(&backgroundBuffer[currentDrawBuffer][y][i], color);
 #endif
@@ -137,9 +156,15 @@ void SmartMatrix::drawHardwareVLine(uint8_t x, uint8_t y0, uint8_t y1, rgb24 col
 
     for (i = y0; i <= y1; i++) {
 #if (USE_ALPHA_MIXING == 1)
+    if (color.alpha == 0)   // Drawing full transparent - leave destination unchanged.
+      return;
+    if (color.alpha == ALPHA_MAX)   // Drawing opaque - ignore destPixel value
+        copyRgb24(&backgroundBuffer[currentDrawBuffer][hwy][hwx], color);
+    else {
         rgb24 destPixelColor = backgroundBuffer[currentDrawBuffer][i][x];
         rgb24 newColor = alphaMixColors(destPixelColor, color);
         copyRgb24(&backgroundBuffer[currentDrawBuffer][i][x], newColor);
+    }
 #else
         copyRgb24(&backgroundBuffer[currentDrawBuffer][i][x], color);
 #endif

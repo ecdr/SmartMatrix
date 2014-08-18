@@ -19,6 +19,15 @@
  * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * 
+ * Alpha Mixing Experiment for the 32x32 RGB LED Matrix
+ *
+ * Written by: Craig A. Lindley
+ * Version: 1.0
+ * Last Update: 07/22/2014
+ *
+ * Copyright (c) 2014 Craig A. Lindley
+ *
  */
 
 #include <stdlib.h>

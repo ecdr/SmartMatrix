@@ -75,17 +75,25 @@ rgb24 SmartMatrix::readPixel(int16_t x, int16_t y) {
 #define ALPHA_MAX 255
 
 // Alpha mix pixel being drawn to the screen (srcPixelColor) with pixel on screen (destPixelColor)
+// Ignores dest alpha - assumes it is always 1.0 (i.e. ALPHA_MAX)
 rgb24 alphaMixColors(const rgb24& destPixelColor, const rgb24& srcPixelColor) {
 
     rgb24 newColor;
-    newColor.alpha = ALPHA_MAX;   // TODO: Check resulting alpha calculation(?)
+    newColor.alpha = ALPHA_MAX;
 
-    uint16_t alpha = srcPixelColor.alpha;
-    uint16_t oneMinusAlpha = ALPHA_MAX - alpha;
+//    uint16_t alpha = srcPixelColor.alpha;
+//    uint16_t oneMinusAlpha = ALPHA_MAX - alpha;
 
-    newColor.red   = ((srcPixelColor.red   * alpha) + (destPixelColor.red   * oneMinusAlpha))/ALPHA_MAX;
-    newColor.green = ((srcPixelColor.green * alpha) + (destPixelColor.green * oneMinusAlpha))/ALPHA_MAX;
-    newColor.blue  = ((srcPixelColor.blue  * alpha) + (destPixelColor.blue  * oneMinusAlpha))/ALPHA_MAX;
+//    newColor.red   = ((srcPixelColor.red   * alpha) + (destPixelColor.red   * oneMinusAlpha))/ALPHA_MAX;
+//    newColor.green = ((srcPixelColor.green * alpha) + (destPixelColor.green * oneMinusAlpha))/ALPHA_MAX;
+//    newColor.blue  = ((srcPixelColor.blue  * alpha) + (destPixelColor.blue  * oneMinusAlpha))/ALPHA_MAX;
+
+// Following should be equivalent to above, but saves a multiply and do not need oneMinusAlpha
+    int16_t alpha = srcPixelColor.alpha;
+
+    newColor.red   = destPixelColor.red   + (((int16_t) srcPixelColor.red   - destPixelColor.red  ) * alpha)/ALPHA_MAX;
+    newColor.green = destPixelColor.green + (((int16_t) srcPixelColor.green - destPixelColor.green) * alpha)/ALPHA_MAX;
+    newColor.blue  = destPixelColor.blue  + (((int16_t) srcPixelColor.blue  - destPixelColor.blue ) * alpha)/ALPHA_MAX;
 
     return newColor;
 }

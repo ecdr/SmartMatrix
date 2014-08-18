@@ -68,16 +68,15 @@ rgb24 SmartMatrix::readPixel(int16_t x, int16_t y) {
 // Alpha mix pixel being drawn to the screen (srcPixelColor) with pixel on screen (destPixelColor)
 rgb24 alphaMixColors(const rgb24& destPixelColor, const rgb24& srcPixelColor) {
 
-// FIXME: Use fixed point math
     rgb24 newColor;
     newColor.alpha = ALPHA_MAX;   // TODO: Check resulting alpha calculation(?)
 
-    float alpha = srcPixelColor.alpha / 255.0;
-    float oneMinusAlpha = 1.0 - alpha;
+    uint16_t alpha = srcPixelColor.alpha;
+    uint16_t oneMinusAlpha = ALPHA_MAX - alpha;
 
-    newColor.red   = (srcPixelColor.red   * alpha) + (destPixelColor.red   * oneMinusAlpha);
-    newColor.green = (srcPixelColor.green * alpha) + (destPixelColor.green * oneMinusAlpha);
-    newColor.blue  = (srcPixelColor.blue  * alpha) + (destPixelColor.blue  * oneMinusAlpha);
+    newColor.red   = ((srcPixelColor.red   * alpha) + (destPixelColor.red   * oneMinusAlpha))/ALPHA_MAX;
+    newColor.green = ((srcPixelColor.green * alpha) + (destPixelColor.green * oneMinusAlpha))/ALPHA_MAX;
+    newColor.blue  = ((srcPixelColor.blue  * alpha) + (destPixelColor.blue  * oneMinusAlpha))/ALPHA_MAX;
 
     return newColor;
 }
